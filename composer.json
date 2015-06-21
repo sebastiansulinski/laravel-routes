@@ -1,0 +1,20 @@
+{
+  "name": "sebastiansulinski/laravel-routes",
+  "description": "Route Collections and Route Model Binding wrappers for Laravel",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Sebastian Sulinski",
+      "email": "info@ssdtutorials.com"
+    }
+  ],
+  "require": {
+    "php": ">=5.4.0",
+    "illuminate/routing": "^5.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "SSD\\": "src"
+    }
+  }
+}
