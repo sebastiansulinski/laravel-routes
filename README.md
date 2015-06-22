@@ -55,9 +55,9 @@ class Blog implements RouteCollectionContract
 
             app('router')->get('latest', 'BlogController@latest');
 
-            app('router')->get('post-comment', 'BlogController@postComment');
+            app('router')->post('comment', 'BlogController@addComment');
 
-            app('router')->get('edit-comment', 'BlogController@editComment');
+            app('router')->get('comment/{id}', 'BlogController@showComment');
 
         });
 
