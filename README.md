@@ -8,13 +8,13 @@ Crate a new directory that will store all route collections for your application
 app/Http/Routes/Collections
 ```
 
-Inside the directory create a new class that will be used with the given section of your system - say for the Front end of your application, we use `FrontCollection.php` and we put it into other directory - to distinguish between sections - because this one belongs to the front end, we call it `Front`.
+Inside the directory create a new class that will be used with the given section of your system - say for the Front end of your application, we use `FrontCollection.php` and we put it into another directory - to distinguish between sections - because this one belongs to the front end, we call it `Front`.
 
 ```
 app/Http/Routes/Collections/Front/FrontCollection.php
 ```
 
-The new `FrontCollection` class will extend the `SSD\LaravelRoutes\RouteCollectionFactory` and implement the required abstract method `getNameSpace` that returns the current namespace, which will then be used to create a fully qualifying name of each class within the `app/Http/Routes/Front` directory.
+The new `FrontCollection` class will extend the `SSD\LaravelRoutes\RouteCollectionFactory` and needs to have the method `getNameSpace` that returns the current namespace, which will be used to create a fully qualifying name of each class within the `app/Http/Routes/Collections/Front` directory.
 
 ```
 // app/Http/Routes/Collections/Front/FrontCollection.php
@@ -34,10 +34,10 @@ class FrontCollection extends RouteCollectionFactory
 }
 ```
 
-Inside of the same directory create a new file for each collection of routes - say for the `Blog` module of your Front section you could use:
+Inside the same directory create a new file for each collection of routes - say for the `Blog` module of your Front section you could use:
 
 ```
-// app/Http/Routes/Collections/Front/News.php
+// app/Http/Routes/Collections/Front/Blog.php
 
 namespace App\Http\Routes\Collections\Front;
 
@@ -66,10 +66,10 @@ class Blog implements RouteCollectionContract
 }
 ```
 
-and perhaps another one for the `Contact` page / form with submission:
+and perhaps another one for the `Contact` Controller with form submission method:
 
 ```
-// app/Http/Routes/Collections/Front/News.php
+// app/Http/Routes/Collections/Front/Contact.php
 
 namespace App\Http\Routes\Collections\Front;
 
@@ -85,7 +85,7 @@ class Contact implements RouteCollectionContract
 
             app('router')->get('/', 'ContactController@index');
 
-            app('router')->get('submit', 'ContactController@submit');
+            app('router')->post('/', 'ContactController@submit');
 
         });
 
@@ -105,7 +105,7 @@ FrontCollection::contact();
 
 The magically called static methods on the `FrontCollection` are names of the collection classes in `camelCase` - say for instance collection with name `FoodRecepies` would be called as `FrontCollection::foodRecepies()` and so on.
 
-If you want to keep your `routes.php` file even cleaner, you could create a master collection for each section and then pass all those separate calls to it - like so
+If you want to keep your `routes.php` file even cleaner, you could create a master collection for each section and then enclose all separate route collections inside of it
 
 ```
 // app/Http/Routes/Collections/Front/Master.php
@@ -131,7 +131,7 @@ class Master implements RouteCollectionContract
 and for the `Admin` section (make sure you first create `AdminCollection`)
 
 ```
-// app/Http/Routes/Collections/Front/Admin.php
+// app/Http/Routes/Collections/Admin/Master.php
 
 namespace App\Http\Routes\Collections\Admin;
 
@@ -176,7 +176,7 @@ Then simply call it from within the routes.php
 
 ```
 use App\Http\Routes\Collections\Front\FrontCollection;
-use App\Http\Routes\Collections\Front\AdminCollection;
+use App\Http\Routes\Collections\Admin\AdminCollection;
 
 FrontCollection::master();
 AdminCollection::master();
@@ -184,7 +184,7 @@ AdminCollection::master();
 
 ### Custom exceptions
 
-The abstract `SSD\LaravelRoutes\RouteCollectionFactory` class can throw eigher `SSD\LaravelRoutes\Exceptions\InvalidClassName` when the static method call is made to the class that does not exist or `SSD\LaravelRoutes\Exceptions\MissingNamespace` when you forget to declare the `getNameSpace()` method on the class extending `SSD\LaravelRoutes\RouteCollectionFactory`.
+The abstract `SSD\LaravelRoutes\RouteCollectionFactory` class can throw either `SSD\LaravelRoutes\Exceptions\InvalidClassName` when the static method name does not correspond to the existing class or `SSD\LaravelRoutes\Exceptions\MissingNamespace` when you forget to declare the `getNameSpace()` method on the class extending `SSD\LaravelRoutes\RouteCollectionFactory`.
 
 
 ## Route model binder
@@ -197,7 +197,7 @@ To start, create a new directory under `app/Http/Routes` called `ModelBindings`
 app/Http/Routes/ModelBindings
 ```
 
-Inside the directory create a class corresponding to the model you are trying to define bindings for - for instance, if you had a `Blog` model on which you'd like to define two bindings - one for `id` and the other for the `slug`
+Inside this directory create a class corresponding to the model you are trying to define bindings for - for instance, if you had a `Blog` model on which you'd like to define two bindings - one for `blog_id` and the other for the `blog_slug`
 
 ```
 app('router')->get('blog/{blog_id}', 'BlogController@edit');
@@ -227,7 +227,9 @@ class BlogBinder implements RouteModelBinderContract
     public function bind(Router $router)
     {
 
-        $router->model('blog_id', 'App\Blog');
+        $router->model('blog_id', Blog::class);
+        // for version of PHP lower than 5.6 use:
+        // $router->model('blog_id', 'App\Blog');
 
         $router->bind('blog_slug', function($slug) {
 
@@ -254,7 +256,7 @@ class BlogBinder implements RouteModelBinderContract
 }
 ```
 
-Add the `scopeWhereSlug()` method to your `Blog` model
+Add the `scopeWhereSlug()` method to your `Blog` model (or, if you're using slugs on more than one model you could extract it to a Trait)
 
 ```
 // app/Blog.php
@@ -291,21 +293,9 @@ use App\Http\Routes\ModelBindings\BlogBinder;
 
 class RouteServiceProvider extends ServiceProvider
 {
-    /**
-     * This namespace is applied to the controller routes in your routes file.
-     *
-     * In addition, it is set as the URL generator's root namespace.
-     *
-     * @var string
-     */
+
     protected $namespace = 'App\Http\Controllers';
 
-    /**
-     * Define your route model bindings, pattern filters, etc.
-     *
-     * @param  \Illuminate\Routing\Router  $router
-     * @return void
-     */
     public function boot(Router $router)
     {
 
@@ -315,12 +305,6 @@ class RouteServiceProvider extends ServiceProvider
 
     }
 
-    /**
-     * Define the routes for the application.
-     *
-     * @param  \Illuminate\Routing\Router  $router
-     * @return void
-     */
     public function map(Router $router)
     {
         $router->group(['namespace' => $this->namespace], function ($router) {
@@ -334,7 +318,7 @@ class RouteServiceProvider extends ServiceProvider
 ### Model binding tip
 
 You are more likely to use `slug` with the front end of your application - so just to boost the performance a bit, let's cache the model for the `slug` binding.
-To do this - create a new, `BaseBinder` class under `App\Http\Routes\ModelBindings` and to make it easier - let's use `nespot/carbon` package. First add carbon dependency with composer.
+To do this - create a new, `BaseBinder` class under `App\Http\Routes\ModelBindings` and to make it easier - let's use `nespot/carbon` package. First add `Carbon` dependency with the composer.
 
 ```
 composer require nesbot/carbon
@@ -403,7 +387,7 @@ class BlogBinder extends BaseBinder implements RouteModelBinderContract
     public function bind(Router $router)
     {
 
-        $router->model('blog_id', 'App\Blog');
+        $router->model('blog_id', Blog::class);
 
         $router->bind('blog_slug', function($slug) {
 
