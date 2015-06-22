@@ -219,11 +219,6 @@ use App\Blog;
 class BlogBinder implements RouteModelBinderContract
 {
 
-    /**
-     * Bind Blog route parameters.
-     *
-     * @param Router $router
-     */
     public function bind(Router $router)
     {
 
@@ -239,19 +234,12 @@ class BlogBinder implements RouteModelBinderContract
 
     }
 
-    /**
-     * Get record by slug.
-     *
-     * @param $slug
-     * @return mixed
-     */
     protected function recordBySlug($slug)
     {
 
         return Blog::whereSlug($slug)->firstOrFail();
 
     }
-
 
 }
 ```
@@ -335,13 +323,6 @@ use Carbon\Carbon;
 
 abstract class BaseBinder {
 
-    /**
-     * Get cached record or cache new one if does not exist.
-     *
-     * @param $key
-     * @param callable $default
-     * @return mixed
-     */
     protected function cache($key, callable $default)
     {
 
@@ -379,11 +360,6 @@ use App\Blog;
 class BlogBinder extends BaseBinder implements RouteModelBinderContract
 {
 
-    /**
-     * Bind Blog route parameters.
-     *
-     * @param Router $router
-     */
     public function bind(Router $router)
     {
 
@@ -404,12 +380,6 @@ class BlogBinder extends BaseBinder implements RouteModelBinderContract
 
     }
 
-    /**
-     * Get record by slug.
-     *
-     * @param $slug
-     * @return mixed
-     */
     protected function recordBySlug($slug)
     {
 
