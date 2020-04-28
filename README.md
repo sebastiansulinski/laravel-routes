@@ -1,5 +1,9 @@
 # Route Collections and Route Model Binding wrappers for Laravel
 
+![No longer maintained](https://img.shields.io/badge/Maintenance-OFF-red.svg)
+### [DEPRECATED] This repository is no longer maintained
+> While this project is functional with older versions of Laravel, the dependencies are no longer up to date. You are still welcome to explore, learn, and use the code provided here.
+
 ## Route collections
 
 Crate a new directory that will store all route collections for your application - example would be directory called `Routes/Collections` under `app/Http`.
